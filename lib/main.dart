@@ -1,5 +1,7 @@
 import 'package:chat_module/screens/chat_page.dart';
 import 'package:chat_module/screens/home_page.dart';
+import 'package:chat_module/screens/login_page.dart';
+import 'package:chat_module/screens/register_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -24,12 +26,18 @@ class MainPage extends StatelessWidget {
         primarySwatch: Colors.cyan,
       ),
       initialRoute: FirebaseAuth.instance.currentUser == null
-          ? HomePage.routeName
+          ? LoginPage.routeName
           : ChatPage.routeName,
       routes: {
         HomePage.routeName: (context) => const HomePage(),
         ChatPage.routeName: (context) => const ChatPage(),
+        LoginPage.routeName:(context) => const LoginPage(),
+        SignUpPage.routeName:(context) => const SignUpPage()
       },
     );
   }
 }
+
+//TODO1: kullanıcı adını mesaj tileda display etme
+//TODO2: avatarı display etme
+//TODO3: user mentionlama

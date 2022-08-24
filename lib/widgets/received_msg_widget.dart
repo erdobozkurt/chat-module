@@ -5,9 +5,11 @@ class ReceivedMsgWidget extends StatelessWidget {
     Key? key,
     required this.text,
     required this.date,
+    required this.name,
   }) : super(key: key);
   final String text;
   final String date;
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +18,14 @@ class ReceivedMsgWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: CircleAvatar(
-              radius: 16,
-              child: Image.network(
-                  'https://i.pinimg.com/originals/ff/a0/9a/ffa09aec412db3f54deadf1b3781de2a.png'),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(4.0),
+          //   child: CircleAvatar(
+          //     radius: 16,
+          //     child: Image.network(
+          //         'https://flyclipart.com/thumb2/default-avatar-png-icon-free-download-518373.png'),
+          //   ),
+          // ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -45,7 +47,7 @@ class ReceivedMsgWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Erdoğan',
+                      name,
                       style: TextStyle(
                           color: Colors.deepPurple.shade600,
                           fontWeight: FontWeight.bold,

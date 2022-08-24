@@ -1,3 +1,4 @@
+import 'package:chat_module/screens/login_page.dart';
 import 'package:chat_module/widgets/received_msg_widget.dart';
 import 'package:chat_module/widgets/sent_msg_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,6 +21,8 @@ class _ChatPageState extends State<ChatPage> {
   final controller = TextEditingController();
 
   final _auth = FirebaseAuth.instance;
+
+  late final String name;
 
   @override
   void dispose() {
@@ -71,6 +74,7 @@ class _ChatPageState extends State<ChatPage> {
                                   date: document['date']
                                       .toString()
                                       .substring(11, 16),
+                                  name: document['name'].toString(),
                                 )
                               : SentMsgWidget(
                                   text: document['message'].toString(),
@@ -134,17 +138,25 @@ class _ChatPageState extends State<ChatPage> {
     var formatter = DateFormat('yyyy-MM-dd-HH:mm:ss');
     String formattedDate = formatter.format(now);
 
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .get()
+        .then((DocumentSnapshot documentSnaphot) {
+      name = documentSnaphot['name'];
+    });
+
     await FirebaseFirestore.instance.collection('messages').add({
       'senderId': _auth.currentUser!.uid,
       'message': message,
-      'date': formattedDate
+      'date': formattedDate,
+      'name': name
     });
   }
 
-  Future signOutFirebase() async{
+  Future signOutFirebase() async {
     await FirebaseAuth.instance.signOut().then((value) {
-       Navigator.pushReplacementNamed(context, HomePage.routeName);
+      Navigator.pushReplacementNamed(context, LoginPage.routeName);
     });
-    
   }
 }
