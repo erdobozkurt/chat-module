@@ -38,6 +38,6 @@ class MainPage extends StatelessWidget {
   }
 }
 
-//TODO1: kullanıcı adını mesaj tileda display etme
-//TODO2: avatarı display etme
-//TODO3: user mentionlama
+//TODO: kullanıcı adını mesaj tileda display etme
+//TODO: avatarı display etme
+//TODO: user mentionlama

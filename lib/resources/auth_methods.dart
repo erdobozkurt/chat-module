@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../screens/chat_page.dart';
+import '../screens/login_page.dart';
 
 class AuthMethods {
   final _auth = FirebaseAuth.instance;
@@ -91,5 +92,14 @@ class AuthMethods {
         ),
       );
     }
+  }
+
+  //* sign out a user
+  Future signOut({
+   required BuildContext context
+  }) async {
+    await FirebaseAuth.instance.signOut().then((value) {
+      Navigator.pushReplacementNamed(context, LoginPage.routeName);
+    });
   }
 }
