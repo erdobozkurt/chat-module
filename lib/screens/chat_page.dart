@@ -22,6 +22,14 @@ class _ChatPageState extends State<ChatPage> {
   String? name;
   final _formKey = GlobalKey<FlutterMentionsState>();
 
+  List<Map<String, dynamic>> data = [];
+
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -54,7 +62,7 @@ class _ChatPageState extends State<ChatPage> {
         body: Column(
           children: [
             StreamBuilder(
-                stream: FirebaseFirestore.instance
+                stream: _firestore
                     .collection('messages')
                     .orderBy('date', descending: true)
                     .snapshots(),
@@ -111,18 +119,27 @@ class _ChatPageState extends State<ChatPage> {
                             Mention(
                               trigger: '@',
                               style: const TextStyle(color: Colors.deepPurple),
-                              data: [
-                                {
-                                  
-                                  "display": "erdogan"
-                                  
-                                },
-                                {
-                                  
-                                  "display": "yusuf",
-                                 
-                                },
-                              ],
+                              data: data,
+                              suggestionBuilder: (data) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(left: 40),
+                                  child: Container(
+                                    color: Colors.blueGrey,
+                                    child: Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundImage:
+                                              NetworkImage(data['avatar']),
+                                        ),
+                                        const SizedBox(
+                                          width: 20,
+                                        ),
+                                        Text(data['name']),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             )
                           ],
                         ),
@@ -148,6 +165,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Future sendMessage() async {
     String message = _formKey.currentState!.controller!.text;
+    print(data);
 
     var now = DateTime.now();
     var formatter = DateFormat('yyyy-MM-dd-HH:mm:ss');
@@ -169,5 +187,15 @@ class _ChatPageState extends State<ChatPage> {
     }).then((value) {
       _formKey.currentState!.controller!.text = '';
     });
+  }
+
+  Future getData() async {
+    
+    await FirebaseFirestore.instance.collection('users').get().then((snapshot) => snapshot.docs.forEach((element) {
+      data.add(element.data());
+      print(element.data());
+     }));
+
+    
   }
 }
