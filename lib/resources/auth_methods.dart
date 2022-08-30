@@ -24,10 +24,14 @@ class AuthMethods {
 
     try {
       if (password.trim() == secPassword.trim()) {
-        await _auth.createUserWithEmailAndPassword(
+        UserCredential result = await _auth.createUserWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
         );
+
+        User? user = result.user;
+        user!.updateDisplayName(name);
+      
 
         String urlDownload = await StorageMethods().uploadImage(avatar);
 
@@ -40,6 +44,7 @@ class AuthMethods {
           'name': name,
           'avatar': urlDownload,
         });
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

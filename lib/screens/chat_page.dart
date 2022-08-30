@@ -21,12 +21,11 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final auth = FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;
-  String? name;
   final formKey = GlobalKey<FlutterMentionsState>();
-  final Debounce debounce = Debounce(Duration(milliseconds: 4000));
+  final Debounce debounce = Debounce(Duration(milliseconds: 400));
   final authMethods = AuthMethods();
-
-  late List<Map<String, dynamic>> data = [];
+  List<Map<String, dynamic>> data = [];
+  String? name;
 
   @override
   void initState() {
@@ -107,19 +106,7 @@ class _ChatPageState extends State<ChatPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: FlutterMentions(
-                          onSearchChanged: (trigger, value) {
-                            data.clear();
-                            debounce(
-                              () {
-                                getData(formKey.currentState!.controller!.text
-                                    .substring(formKey
-                                            .currentState!.controller!.text
-                                            .lastIndexOf('@') +
-                                        1));
-                                print('triggered');
-                              },
-                            );
-                          },
+                          onSearchChanged: filterKey,
                           key: formKey,
                           suggestionPosition: SuggestionPosition.Top,
                           decoration: InputDecoration(
@@ -181,6 +168,20 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  void filterKey(trigger, value) {
+    data.clear();
+    String text = formKey.currentState!.controller!.text;
+    if (value.isNotEmpty)
+      debounce(
+        () {
+          getData(
+            text.substring(text.lastIndexOf('@') + 1),
+          );
+          print('triggered');
+        },
+      );
+  }
+
   Future sendMessage() async {
     String message = formKey.currentState!.controller!.text;
     print(data);
@@ -189,19 +190,11 @@ class _ChatPageState extends State<ChatPage> {
     var formatter = DateFormat('yyyy-MM-dd-HH:mm:ss');
     String formattedDate = formatter.format(now);
 
-    await firestore
-        .collection('users')
-        .doc(auth.currentUser!.uid)
-        .get()
-        .then((DocumentSnapshot documentSnaphot) {
-      name = documentSnaphot['name'];
-    });
-
     await firestore.collection('messages').add({
       'senderId': auth.currentUser!.uid,
       'message': message,
       'date': formattedDate,
-      'name': name
+      'name': auth.currentUser!.displayName
     }).then((value) {
       formKey.currentState!.controller!.text = '';
     });
@@ -217,7 +210,12 @@ class _ChatPageState extends State<ChatPage> {
         .then(
           (snapshot) => snapshot.docs.forEach(
             (document) {
-              data.add(document.data());
+              data.add({
+                'display': document['name'],
+                'id': document['senderId'],
+                'avatar': document['avatar'],
+                'name': document['name']
+              });
               print(document.data());
             },
           ),
