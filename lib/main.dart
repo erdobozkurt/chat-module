@@ -38,6 +38,9 @@ class MainPage extends StatelessWidget {
   }
 }
 
-//TODO: kullanıcı adını mesaj tileda display etme
-//TODO: avatarı display etme
-//TODO: user mentionlama
+//TODO: use getData in debounce
+
+//TODO: make filtration in getData
+
+//TODO: use debounce to call getData
+
