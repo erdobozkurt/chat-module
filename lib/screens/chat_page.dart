@@ -1,4 +1,5 @@
 import 'package:chat_module/resources/auth_methods.dart';
+import 'package:chat_module/utils/letter_case_perm.dart';
 import 'package:chat_module/widgets/received_msg_widget.dart';
 import 'package:chat_module/widgets/sent_msg_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -25,6 +26,7 @@ class _ChatPageState extends State<ChatPage> {
   final Debounce debounce = Debounce(Duration(milliseconds: 400));
   final authMethods = AuthMethods();
   List<Map<String, dynamic>> data = [];
+  final letterCasePerm = LetterCasePermutation();
 
   @override
   void initState() {
@@ -170,12 +172,15 @@ class _ChatPageState extends State<ChatPage> {
   void filterKey(trigger, value) {
     data.clear();
     String text = formKey.currentState!.controller!.text;
+
     if (value.isNotEmpty)
       debounce(
         () {
-          getData(
+          List<String> searchList = letterCasePerm.letterCasePermutation(
             text.substring(text.lastIndexOf('@') + 1),
           );
+
+          getData(searchList);
           print('triggered');
         },
       );
@@ -199,26 +204,28 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
-  Future getData(String filterData) async {
-    await firestore
-        .collection('users')
-        .orderBy('name')
-        .where('name', isGreaterThanOrEqualTo: filterData.toUpperCase())
-        .where('name', isLessThan: filterData.toLowerCase() + 'z')
-        .get()
-        .then(
-          (snapshot) => snapshot.docs.forEach(
-            (document) {
+  Future getData(List filterData) async {
+    // filter firestore query by a list of strings
+
+    filterData.forEach((element) async {
+      await firestore
+          .collection('users')
+          .orderBy('name')
+          .startAt([element])
+          .endAt([element + '\uf8ff'])
+          .get()
+          .then((value) {
+            value.docs.forEach((element) {
               data.add({
-                'display': document['name'],
-                'id': document['senderId'],
-                'avatar': document['avatar'],
-                'name': document['name']
+                'display': element['name'],
+                'id': element['senderId'],
+                'avatar': element['avatar'],
+                'name': element['name']
               });
-              print(document.data());
-            },
-          ),
-        );
-    setState(() {});
+              print(element.data());
+            });
+          });
+      setState(() {});
+    });
   }
 }
