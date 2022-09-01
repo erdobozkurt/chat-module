@@ -11,6 +11,7 @@ import '../screens/login_page.dart';
 class AuthMethods {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  final storageMethods = StorageMethods();
 
   //* Sign up a user
   Future<void> signUp({
@@ -24,23 +25,23 @@ class AuthMethods {
 
     try {
       if (password.trim() == secPassword.trim()) {
-        UserCredential result = await _auth.createUserWithEmailAndPassword(
+        UserCredential credential = await _auth.createUserWithEmailAndPassword(
           email: email.trim(),
           password: password.trim(),
         );
 
-        User? user = result.user;
+        User? user = credential.user;
         user!.updateDisplayName(name);
       
 
-        String urlDownload = await StorageMethods().uploadImage(avatar);
+        String urlDownload = await storageMethods.uploadImage(avatar);
 
         await _firestore
             .collection('users')
-            .doc(_auth.currentUser!.uid)
+            .doc(credential.user!.uid)
             .set({
-          'senderId': _auth.currentUser!.uid,
-          'email': _auth.currentUser!.email,
+          'senderId': credential.user!.uid,
+          'email': credential.user!.email,
           'name': name,
           'avatar': urlDownload,
         });

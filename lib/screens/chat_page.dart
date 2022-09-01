@@ -25,7 +25,6 @@ class _ChatPageState extends State<ChatPage> {
   final Debounce debounce = Debounce(Duration(milliseconds: 400));
   final authMethods = AuthMethods();
   List<Map<String, dynamic>> data = [];
-  String? name;
 
   @override
   void initState() {
@@ -204,8 +203,8 @@ class _ChatPageState extends State<ChatPage> {
     await firestore
         .collection('users')
         .orderBy('name')
-        .startAt([filterData])
-        .endAt([filterData + '~'])
+        .where('name', isGreaterThanOrEqualTo: filterData.toUpperCase())
+        .where('name', isLessThan: filterData.toLowerCase() + 'z')
         .get()
         .then(
           (snapshot) => snapshot.docs.forEach(
