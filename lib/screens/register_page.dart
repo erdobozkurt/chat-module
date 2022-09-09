@@ -1,10 +1,6 @@
 import 'dart:io';
 
-import 'package:chat_module/resources/auth_methods.dart';
-import 'package:chat_module/resources/storage_methods.dart';
-import 'package:chat_module/screens/chat_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_module/services/auth_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -27,8 +23,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
   PickedFile? pickedFile;
 
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
 
   @override
   void dispose() {
@@ -165,7 +159,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       email: emailController.text,
                       password: passwordContoller.text,
                       secPassword: secPasswordController.text,
-                      avatar: pickedFile!,
+                      avatar: pickedFile ?? null,
                       context: context);
                 },
                 child: Text('Sign Up',

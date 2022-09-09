@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../resources/auth_methods.dart';
+import '../services/auth_methods.dart';
 import '../widgets/input_tile_widget.dart';
 import 'register_page.dart';
 

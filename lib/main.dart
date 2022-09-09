@@ -38,9 +38,3 @@ class MainPage extends StatelessWidget {
   }
 }
 
-//TODO: use getData in debounce
-
-//TODO: make filtration in getData
-
-//TODO: use debounce to call getData
-

@@ -1,10 +1,8 @@
-
-import 'package:chat_module/resources/storage_methods.dart';
+import 'package:chat_module/services/storage_methods.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../screens/chat_page.dart';
 import '../screens/login_page.dart';
 
@@ -12,6 +10,7 @@ class AuthMethods {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   final storageMethods = StorageMethods();
+  String? urlDownload;
 
   //* Sign up a user
   Future<void> signUp({
@@ -19,10 +18,9 @@ class AuthMethods {
     required String email,
     required String password,
     required String secPassword,
-    required PickedFile avatar,
+    PickedFile? avatar,
     required BuildContext context,
   }) async {
-
     try {
       if (password.trim() == secPassword.trim()) {
         UserCredential credential = await _auth.createUserWithEmailAndPassword(
@@ -32,20 +30,21 @@ class AuthMethods {
 
         User? user = credential.user;
         user!.updateDisplayName(name);
-      
 
-        String urlDownload = await storageMethods.uploadImage(avatar);
+        if (avatar != null) {
+          urlDownload = await storageMethods.uploadImage(avatar);
+        } else {
+          // default avatar picture
+          urlDownload =
+              'gs://word-a.appspot.com/users/default_avatar/default-user-icon.jpg';
+        }
 
-        await _firestore
-            .collection('users')
-            .doc(credential.user!.uid)
-            .set({
+        await _firestore.collection('users').doc(credential.user!.uid).set({
           'senderId': credential.user!.uid,
           'email': credential.user!.email,
           'name': name,
           'avatar': urlDownload,
         });
-
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -72,11 +71,10 @@ class AuthMethods {
   }
 
   //* Sign in a user
-  Future signIn({
-    required String email,
-    required String password,
-    required BuildContext context
-  }) async {
+  Future signIn(
+      {required String email,
+      required String password,
+      required BuildContext context}) async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -86,7 +84,6 @@ class AuthMethods {
       _auth.authStateChanges().listen((User? user) {
         if (user != null) {
           Navigator.pushReplacementNamed(context, ChatPage.routeName);
-          
         }
       });
     } on FirebaseAuthException catch (e) {
@@ -101,9 +98,7 @@ class AuthMethods {
   }
 
   //* sign out a user
-  Future signOut({
-   required BuildContext context
-  }) async {
+  Future signOut({required BuildContext context}) async {
     await FirebaseAuth.instance.signOut().then((value) {
       Navigator.pushReplacementNamed(context, LoginPage.routeName);
     });

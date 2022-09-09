@@ -1,4 +1,5 @@
-import 'package:chat_module/resources/auth_methods.dart';
+import 'package:chat_module/models/message.dart';
+import 'package:chat_module/services/auth_methods.dart';
 import 'package:chat_module/utils/letter_case_perm.dart';
 import 'package:chat_module/widgets/received_msg_widget.dart';
 import 'package:chat_module/widgets/sent_msg_widget.dart';
@@ -7,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mentions/flutter_mentions.dart';
 import 'package:intl/intl.dart';
-
 import '../utils/reactive.dart';
 
 class ChatPage extends StatefulWidget {
@@ -65,37 +65,36 @@ class _ChatPageState extends State<ChatPage> {
         body: Column(
           children: [
             StreamBuilder(
-                stream: firestore
-                    .collection('messages')
-                    .orderBy('date', descending: true)
-                    .snapshots(),
-                builder: ((BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return Expanded(
-                    child: ListView(
-                      reverse: true,
-                      children: snapshot.data!.docs.map((document) {
-                        return document['senderId'] != auth.currentUser!.uid
-                            ? ReceivedMsgWidget(
-                                text: document['message'].toString(),
-                                date: document['date']
-                                    .toString()
-                                    .substring(11, 16),
-                                name: document['name'].toString(),
-                              )
-                            : SentMsgWidget(
-                                text: document['message'].toString(),
-                                date: document['date']
-                                    .toString()
-                                    .substring(11, 16),
-                              );
-                      }).toList(),
-                    ),
-                  );
-                })),
+              stream: firestore
+                  .collection('messages')
+                  .orderBy('date', descending: true)
+                  .snapshots(),
+              builder: ((BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return Expanded(
+                  child: ListView(
+                    reverse: true,
+                    children: snapshot.data!.docs.map((document) {
+                      return document['senderId'] != auth.currentUser!.uid
+                          ? ReceivedMsgWidget(
+                              text: document['message'].toString(),
+                              date:
+                                  document['date'].toString().substring(11, 16),
+                              name: document['name'].toString(),
+                            )
+                          : SentMsgWidget(
+                              text: document['message'].toString(),
+                              date:
+                                  document['date'].toString().substring(11, 16),
+                            );
+                    }).toList(),
+                  ),
+                );
+              }),
+            ),
             Container(
               color: Colors.white,
               child: SizedBox(
@@ -187,25 +186,26 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future sendMessage() async {
-    String message = formKey.currentState!.controller!.text;
-    print(data);
+    String messageText = formKey.currentState!.controller!.text;
+    String name = auth.currentUser!.displayName.toString();
+    String senderId = auth.currentUser!.uid;
+    String date = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
 
-    var now = DateTime.now();
-    var formatter = DateFormat('yyyy-MM-dd-HH:mm:ss');
-    String formattedDate = formatter.format(now);
+    final Message message = Message(
+      messageText: messageText,
+      senderId: senderId,
+      date: date,
+      name: name,
+    );
+    debugPrint(data.toString());
 
-    await firestore.collection('messages').add({
-      'senderId': auth.currentUser!.uid,
-      'message': message,
-      'date': formattedDate,
-      'name': auth.currentUser!.displayName
-    }).then((value) {
+    await firestore.collection('messages').add(message.toJson()).then((value) {
       formKey.currentState!.controller!.text = '';
     });
   }
 
   Future getData(List filterData) async {
-    // filter firestore query by a list of strings
+    //* filter firestore query by a list of strings
 
     filterData.forEach((element) async {
       await firestore
